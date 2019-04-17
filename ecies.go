@@ -27,22 +27,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package goEncrypt
+package goencrypt
 
 import (
+	"crypto"
+	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/hmac"
+	"crypto/sha256"
+	"crypto/sha512"
 	"crypto/subtle"
 	"fmt"
 	"hash"
 	"io"
 	"math/big"
-	"crypto"
-	"crypto/sha256"
-	"crypto/aes"
-	"crypto/sha512"
 )
 
 var (
@@ -53,7 +53,6 @@ var (
 	ErrSharedKeyIsPointAtInfinity = fmt.Errorf("ecies: shared key is point at infinity")
 	ErrSharedKeyTooBig            = fmt.Errorf("ecies: shared key params are too big")
 	ErrUnsupportedECIESParameters = fmt.Errorf("ecies: unsupported ECIES parameters")
-
 )
 
 // PublicKey is a representation of an elliptic curve public key.
@@ -371,16 +370,16 @@ func (prv *PrivateKey) Decrypt(c, s1, s2 []byte) (m []byte, err error) {
 	return
 }
 
-
 //以下为从以太坊源码/crypt/ecies/params.go中截取过来
 func ParamsFromCurve(curve elliptic.Curve) (params *ECIESParams) {
 	return paramsFromCurve[curve]
 }
+
 var paramsFromCurve = map[elliptic.Curve]*ECIESParams{
 	//ethcrypto.S256(): ECIES_AES128_SHA256,
-	elliptic.P256():  ECIES_AES128_SHA256,
-	elliptic.P384():  ECIES_AES256_SHA384,
-	elliptic.P521():  ECIES_AES256_SHA512,
+	elliptic.P256(): ECIES_AES128_SHA256,
+	elliptic.P384(): ECIES_AES256_SHA384,
+	elliptic.P521(): ECIES_AES256_SHA512,
 }
 var (
 	ECIES_AES128_SHA256 = &ECIESParams{
@@ -415,6 +414,7 @@ var (
 		KeyLen:    32,
 	}
 )
+
 type ECIESParams struct {
 	Hash      func() hash.Hash // hash function
 	hashAlgo  crypto.Hash

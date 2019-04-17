@@ -1,40 +1,40 @@
-package goEncrypt
+package goencrypt
 
 import (
-	"crypto/sha256"
-	"crypto/rand"
-	"encoding/pem"
-	"crypto/x509"
-	"log"
-	"runtime"
 	"crypto/ecdsa"
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
+	"log"
 	"math/big"
+	"runtime"
 )
 
 /*
-@Time : 2018/11/4 18:51 
+@Time : 2018/11/4 18:51
 @Author : wuman
 @File : EccSign
 @Software: GoLand
 */
 
-func init(){
-	log.SetFlags(log.Ldate|log.Lshortfile)
-}   //处理日志的格式
+func init() {
+	log.SetFlags(log.Ldate | log.Lshortfile)
+} //处理日志的格式
 
-func EccSign(msg []byte,Key []byte)(rtext []byte,stext []byte){
+func EccSign(msg []byte, Key []byte) (rtext []byte, stext []byte) {
 	// 获取私钥
 	//2. pem格式解码
 	block, _ := pem.Decode(Key)
 
 	//防止用户传的密钥不正确导致panic,这里恢复程序并打印错误
-	defer func(){
-		if err:=recover();err!=nil{
-			switch err.(type){
+	defer func() {
+		if err := recover(); err != nil {
+			switch err.(type) {
 			case runtime.Error:
-				log.Println("runtime err:",err,"请检查密钥是否正确")
+				log.Println("runtime err:", err, "请检查密钥是否正确")
 			default:
-				log.Println("error:",err)
+				log.Println("error:", err)
 			}
 		}
 	}()
@@ -55,37 +55,35 @@ func EccSign(msg []byte,Key []byte)(rtext []byte,stext []byte){
 	rText, _ := r.MarshalText()
 	sText, _ := s.MarshalText()
 
-	return rText,sText
-
+	return rText, sText
 
 }
 
-func EccVerifySign(msg []byte,Key []byte,rText,sText []byte) bool {
+func EccVerifySign(msg []byte, Key []byte, rText, sText []byte) bool {
 	// 获取公钥
 	//1. pem格式解码
 	block, _ := pem.Decode(Key)
 
 	//防止用户传的密钥不正确导致panic,这里恢复程序并打印错误
-	defer func(){
-		if err:=recover();err!=nil{
-			switch err.(type){
+	defer func() {
+		if err := recover(); err != nil {
+			switch err.(type) {
 			case runtime.Error:
-				log.Println("runtime err:",err,"请检查密钥是否正确")
+				log.Println("runtime err:", err, "请检查密钥是否正确")
 			default:
-				log.Println("error:",err)
+				log.Println("error:", err)
 			}
 		}
 	}()
 	// x509解码
 	publicKeyInterface, _ := x509.ParsePKIXPublicKey(block.Bytes)
-	publicKey:=publicKeyInterface.(*ecdsa.PublicKey)  //返回的接口类型需要类型断言一下
-
+	publicKey := publicKeyInterface.(*ecdsa.PublicKey) //返回的接口类型需要类型断言一下
 
 	myhash := sha256.New()
 	myhash.Write(msg)
 	resultHash := myhash.Sum(nil)
 
-	var r,s big.Int
+	var r, s big.Int
 	r.UnmarshalText(rText)
 	s.UnmarshalText(sText)
 	// 校验签名
